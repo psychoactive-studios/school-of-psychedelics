@@ -35,15 +35,16 @@ function handleVideoClick() {
 
       const playBtn = this.querySelector('[f-data-video="play-button"]');
       const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
-
+      console.log(playBtn.dataset.clicked);
       if (playBtn && playBtn.contains(event.target)) {
         if (video.muted) volumeBtn.click(); // play with volume on
         // restart if first time playing
-        if (!playBtn.dataset.clicked) {
-          video.currentTime = 0;
-          playBtn.dataset.clicked = "true";
-        }
-        video.loop = false;
+        // if (!playBtn.dataset.clicked) {
+        //   video.currentTime = 0;
+        //   video.play();
+        //   playBtn.dataset.clicked = "true";
+        // }
+        // video.loop = false;
         pauseOtherVideos(video);
         showHideVideoInfo(true);
         return; // exit
@@ -51,10 +52,13 @@ function handleVideoClick() {
 
       // if the clicked element is volume btn logic
       if (volumeBtn && volumeBtn.contains(event.target)) {
+        console.log(!playBtn.dataset.clicked);
         if (!playBtn.dataset.clicked) {
           resetCurrentPlayBtn(true);
           showHideVideoInfo(true);
           video.loop = false;
+          video.currentTime = 0;
+          video.play();
           playBtn.dataset.clicked = "true";
         }
         if (!volumeBtn.dataset.clicked) {
@@ -272,6 +276,34 @@ document.addEventListener("DOMContentLoaded", function () {
   // Only run if we have video elements on the page
   const hasVideos = document.querySelectorAll("video").length > 0;
   if (!hasVideos) return;
+
+  // Add fullscreen change event listeners
+  document.addEventListener("fullscreenchange", function () {
+    const videoPlayers = document.querySelectorAll(".video-player-style");
+    if (document.fullscreenElement) {
+      videoPlayers.forEach((player) => {
+        player.style.objectFit = "contain";
+      });
+    } else {
+      videoPlayers.forEach((player) => {
+        player.style.objectFit = "cover";
+      });
+    }
+  });
+
+  // Also handle webkit browsers
+  document.addEventListener("webkitfullscreenchange", function () {
+    const videoPlayers = document.querySelectorAll(".video-player-style");
+    if (document.webkitFullscreenElement) {
+      videoPlayers.forEach((player) => {
+        player.style.objectFit = "contain";
+      });
+    } else {
+      videoPlayers.forEach((player) => {
+        player.style.objectFit = "cover";
+      });
+    }
+  });
 
   resetAllPlayBtns();
   handleVideoClick();

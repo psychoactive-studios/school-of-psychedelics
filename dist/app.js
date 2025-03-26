@@ -596,10 +596,8 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"lMh9v":[function(require,module,exports,__globalThis) {
-// alert("we local");
 function handleVideoClick() {
     const videoWrappers = document.querySelectorAll(".video-wrapper");
-    const isUpcomingRetreatsPage = window.location.pathname.includes("/upcoming-retreats");
     // Exit if no video wrappers found
     if (!videoWrappers.length) return;
     videoWrappers.forEach((wrapper)=>{
@@ -620,24 +618,29 @@ function handleVideoClick() {
             if (videoTimeline && videoTimeline.contains(event.target)) return; // exit
             const playBtn = this.querySelector('[f-data-video="play-button"]');
             const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
+            console.log(playBtn.dataset.clicked);
             if (playBtn && playBtn.contains(event.target)) {
                 if (video.muted) volumeBtn.click(); // play with volume on
                 // restart if first time playing
-                if (!playBtn.dataset.clicked) {
-                    video.currentTime = 0;
-                    playBtn.dataset.clicked = "true";
-                }
-                video.loop = false;
+                // if (!playBtn.dataset.clicked) {
+                //   video.currentTime = 0;
+                //   video.play();
+                //   playBtn.dataset.clicked = "true";
+                // }
+                // video.loop = false;
                 pauseOtherVideos(video);
                 showHideVideoInfo(true);
                 return; // exit
             }
             // if the clicked element is volume btn logic
             if (volumeBtn && volumeBtn.contains(event.target)) {
+                console.log(!playBtn.dataset.clicked);
                 if (!playBtn.dataset.clicked) {
                     resetCurrentPlayBtn(true);
                     showHideVideoInfo(true);
                     video.loop = false;
+                    video.currentTime = 0;
+                    video.play();
                     playBtn.dataset.clicked = "true";
                 }
                 if (!volumeBtn.dataset.clicked) volumeBtn.dataset.clicked = "true";
@@ -806,6 +809,26 @@ document.addEventListener("DOMContentLoaded", function() {
     // Only run if we have video elements on the page
     const hasVideos = document.querySelectorAll("video").length > 0;
     if (!hasVideos) return;
+    // Add fullscreen change event listeners
+    document.addEventListener("fullscreenchange", function() {
+        const videoPlayers = document.querySelectorAll(".video-player-style");
+        if (document.fullscreenElement) videoPlayers.forEach((player)=>{
+            player.style.objectFit = "contain";
+        });
+        else videoPlayers.forEach((player)=>{
+            player.style.objectFit = "cover";
+        });
+    });
+    // Also handle webkit browsers
+    document.addEventListener("webkitfullscreenchange", function() {
+        const videoPlayers = document.querySelectorAll(".video-player-style");
+        if (document.webkitFullscreenElement) videoPlayers.forEach((player)=>{
+            player.style.objectFit = "contain";
+        });
+        else videoPlayers.forEach((player)=>{
+            player.style.objectFit = "cover";
+        });
+    });
     resetAllPlayBtns();
     handleVideoClick();
 });
