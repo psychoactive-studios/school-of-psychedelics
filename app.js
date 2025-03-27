@@ -4,47 +4,82 @@ function handleVideoClick() {
   // Exit if no video wrappers found
   if (!videoWrappers.length) return;
 
+  // Add spacebar key press handler to play / pause video if 80% in view
+  // document.addEventListener("keydown", (e) => {
+  //   if (e.code === "Space") {
+  //     e.preventDefault(); // Prevent default page scroll
+  //     console.log("spacebar pressed");
+
+  //     // Find the video wrapper that is most visible
+  //     let mostVisibleWrapper = null;
+  //     let highestRatio = 0;
+
+  //     videoWrappers.forEach((wrapper) => {
+  //       const rect = wrapper.getBoundingClientRect();
+  //       const windowHeight = window.innerHeight;
+  //       const visibleHeight =
+  //         Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+  //       const ratio = visibleHeight / windowHeight;
+
+  //       if (ratio > highestRatio) {
+  //         highestRatio = ratio;
+  //         mostVisibleWrapper = wrapper;
+  //       }
+  //     });
+
+  //     if (mostVisibleWrapper && highestRatio >= 0.8) {
+  //       const video = mostVisibleWrapper.querySelector("video");
+  //       const playBtn = mostVisibleWrapper.querySelector(
+  //         '[f-data-video="play-button"]'
+  //       );
+  //       const pauseBtn = mostVisibleWrapper.querySelector(
+  //         '[f-data-video="pause-button"]'
+  //       );
+
+  //       if (video && playBtn && pauseBtn) {
+  //         if (video.paused) {
+  //           playBtn.click();
+  //         } else {
+  //           pauseBtn.click();
+  //         }
+  //       }
+  //     }
+  //   }
+  // });
+
   videoWrappers.forEach((wrapper) => {
     wrapper.addEventListener("click", function (event) {
       const video = this.querySelector("video");
       const hasPlayed = !video.paused && !video.muted && video.volume > 0;
+      const playOverlay = this.querySelector(".video-play-overlay");
+      const pauseBtn = this.querySelector('[f-data-video="pause-button"]');
+      const volumeSlider = this.querySelector('[f-data-video="volume-slider"]');
+      const videoTimeline = wrapper.querySelector(".time-controls-wrapper");
+      const playBtn = this.querySelector('[f-data-video="play-button"]');
+      const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
 
       // hide video poster overlay
-      const playOverlay = this.querySelector(".video-play-overlay");
       if (playOverlay) {
         playOverlay.style.display = "none";
       }
 
       // ignore pause btn clicks
-      const pauseBtn = this.querySelector('[f-data-video="pause-button"]');
       if (pauseBtn && pauseBtn.contains(event.target)) {
         return; // exit
       }
 
       // ignore volume change clicks
-      const volumeSlider = this.querySelector('[f-data-video="volume-slider"]');
       if (volumeSlider && volumeSlider.contains(event.target)) {
         return; // exit
       }
 
       // ignore videoTimeline clicks
-      const videoTimeline = wrapper.querySelector(".time-controls-wrapper");
       if (videoTimeline && videoTimeline.contains(event.target)) {
         return; // exit
       }
 
-      const playBtn = this.querySelector('[f-data-video="play-button"]');
-      const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
-      console.log(playBtn.dataset.clicked);
       if (playBtn && playBtn.contains(event.target)) {
         if (video.muted) volumeBtn.click(); // play with volume on
-        // restart if first time playing
-        // if (!playBtn.dataset.clicked) {
-        //   video.currentTime = 0;
-        //   video.play();
-        //   playBtn.dataset.clicked = "true";
-        // }
-        // video.loop = false;
         pauseOtherVideos(video);
         showHideVideoInfo(true);
         return; // exit
@@ -52,7 +87,6 @@ function handleVideoClick() {
 
       // if the clicked element is volume btn logic
       if (volumeBtn && volumeBtn.contains(event.target)) {
-        console.log(!playBtn.dataset.clicked);
         if (!playBtn.dataset.clicked) {
           resetCurrentPlayBtn(true);
           showHideVideoInfo(true);
@@ -272,11 +306,7 @@ function pauseOtherVideos(currentVideo) {
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Only run if we have video elements on the page
-  const hasVideos = document.querySelectorAll("video").length > 0;
-  if (!hasVideos) return;
-
+function handleFullscreenChange() {
   // Add fullscreen change event listeners
   document.addEventListener("fullscreenchange", function () {
     const videoPlayers = document.querySelectorAll(".video-player-style");
@@ -304,7 +334,14 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
   });
+}
 
+document.addEventListener("DOMContentLoaded", function () {
+  // Only run if we have video elements on the page
+  const hasVideos = document.querySelectorAll("video").length > 0;
+  if (!hasVideos) return;
+
+  handleFullscreenChange();
   resetAllPlayBtns();
   handleVideoClick();
 });
