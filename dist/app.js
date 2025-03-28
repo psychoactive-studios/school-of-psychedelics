@@ -600,43 +600,6 @@ function handleVideoClick() {
     const videoWrappers = document.querySelectorAll(".video-wrapper");
     // Exit if no video wrappers found
     if (!videoWrappers.length) return;
-    // Add spacebar key press handler to play / pause video if 80% in view
-    // document.addEventListener("keydown", (e) => {
-    //   if (e.code === "Space") {
-    //     e.preventDefault(); // Prevent default page scroll
-    //     console.log("spacebar pressed");
-    //     // Find the video wrapper that is most visible
-    //     let mostVisibleWrapper = null;
-    //     let highestRatio = 0;
-    //     videoWrappers.forEach((wrapper) => {
-    //       const rect = wrapper.getBoundingClientRect();
-    //       const windowHeight = window.innerHeight;
-    //       const visibleHeight =
-    //         Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-    //       const ratio = visibleHeight / windowHeight;
-    //       if (ratio > highestRatio) {
-    //         highestRatio = ratio;
-    //         mostVisibleWrapper = wrapper;
-    //       }
-    //     });
-    //     if (mostVisibleWrapper && highestRatio >= 0.8) {
-    //       const video = mostVisibleWrapper.querySelector("video");
-    //       const playBtn = mostVisibleWrapper.querySelector(
-    //         '[f-data-video="play-button"]'
-    //       );
-    //       const pauseBtn = mostVisibleWrapper.querySelector(
-    //         '[f-data-video="pause-button"]'
-    //       );
-    //       if (video && playBtn && pauseBtn) {
-    //         if (video.paused) {
-    //           playBtn.click();
-    //         } else {
-    //           pauseBtn.click();
-    //         }
-    //       }
-    //     }
-    //   }
-    // });
     videoWrappers.forEach((wrapper)=>{
         wrapper.addEventListener("click", function(event) {
             const video = this.querySelector("video");
@@ -645,17 +608,25 @@ function handleVideoClick() {
             const pauseBtn = this.querySelector('[f-data-video="pause-button"]');
             const volumeSlider = this.querySelector('[f-data-video="volume-slider"]');
             const videoTimeline = wrapper.querySelector(".time-controls-wrapper");
+            const volumeControl = this.querySelector(".volume-control");
             const playBtn = this.querySelector('[f-data-video="play-button"]');
             const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
             // hide video poster overlay
             if (playOverlay) playOverlay.style.display = "none";
+            // Show play overlay again on mouseleave if video has been interacted with
+            wrapper.addEventListener("mouseleave", ()=>{
+                if (playOverlay && video.paused) playOverlay.style.display = "flex";
+            });
             // ignore pause btn clicks
             if (pauseBtn && pauseBtn.contains(event.target)) return; // exit
             // ignore volume change clicks
             if (volumeSlider && volumeSlider.contains(event.target)) return; // exit
+            // ignore volume center clicks
+            if (volumeControl && volumeControl.contains(event.target) && !volumeBtn.contains(event.target)) return; // exit
             // ignore videoTimeline clicks
             if (videoTimeline && videoTimeline.contains(event.target)) return; // exit
             if (playBtn && playBtn.contains(event.target)) {
+                keepHoverInteractionOnAllVideos();
                 if (video.muted) volumeBtn.click(); // play with volume on
                 pauseOtherVideos(video);
                 showHideVideoInfo(true);
@@ -731,6 +702,8 @@ function handleVideoClick() {
             } else if (video.paused) {
                 pauseOtherVideos(video);
                 video.play();
+                video.muted = false;
+                video.volume = 1;
                 video.loop = false;
                 resetCurrentPlayBtn(true);
                 showHideVideoInfo(true);
@@ -746,6 +719,18 @@ function handleVideoClick() {
                 video.loop = false;
                 resetCurrentPlayBtn(true);
                 showHideVideoInfo(true);
+            }
+            function keepHoverInteractionOnAllVideos() {
+                videoWrappers.forEach((wrapper)=>{
+                    // Auto-play muted video on hover if not interacted with yet
+                    wrapper.addEventListener("mouseenter", ()=>{
+                        const currentVideo = video;
+                        const thisVideo = wrapper.querySelector("video");
+                        const playBtn = wrapper.querySelector('[f-data-video="play-button"]');
+                        // Only play other videos that aren't the current one being interacted with
+                        if (thisVideo !== currentVideo && thisVideo.classList.contains("is-testimonial") && !playBtn.dataset.clicked && !wrapper.dataset.clicked) thisVideo.play();
+                    });
+                });
             }
             // Show/hide video info
             function showHideVideoInfo(inverse = false) {
@@ -855,10 +840,52 @@ function handleFullscreenChange() {
         });
     });
 }
+function fixVideoPreviewPosition() {
+    const element = document.querySelector(".video-preview-thumbnail_wrapper"); // Change this selector to match your element
+    const fixedY = -140; // Set the desired Y position
+    const observer = new MutationObserver(()=>{
+        const computedStyle = window.getComputedStyle(element);
+        const matrix = new DOMMatrix(computedStyle.transform);
+        // Override only X while keeping Y fixed
+        element.style.transform = `translateX(${matrix.m41}px) translateY(${fixedY}px)`;
+    });
+    observer.observe(element, {
+        attributes: true,
+        attributeFilter: [
+            "style"
+        ]
+    });
+}
+function resetVideoPreviewPosition() {
+    const element = document.querySelector(".video-preview-thumbnail_wrapper");
+    const observer = new MutationObserver(()=>{
+        element.style.transform = `translate(0, 0)`;
+    });
+    observer.observe(element, {
+        attributes: true,
+        attributeFilter: [
+            "style"
+        ]
+    });
+}
+function setAllPreviewVideoSources() {
+    const videoWrappers = document.querySelectorAll(".video-wrapper");
+    if (!videoWrappers.length) return;
+    videoWrappers.forEach((wrapper)=>{
+        const video = wrapper.querySelector('[f-data-video="video-element"]');
+        const preview = wrapper.querySelector('[f-data-video="video-preview"]');
+        if (!video || !preview) return;
+        const source = video.querySelector("source").src;
+        preview.src = source;
+    });
+}
 document.addEventListener("DOMContentLoaded", function() {
     // Only run if we have video elements on the page
     const hasVideos = document.querySelectorAll("video").length > 0;
     if (!hasVideos) return;
+    setAllPreviewVideoSources();
+    resetVideoPreviewPosition();
+    // fixVideoPreviewPosition();
     handleFullscreenChange();
     resetAllPlayBtns();
     handleVideoClick();
