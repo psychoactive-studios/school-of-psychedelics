@@ -68,6 +68,8 @@ function handleVideoClick() {
           showHideVideoInfo(true);
           video.loop = false;
           video.currentTime = 0;
+          video.muted = false; // Explicitly unmute
+          video.volume = 1; // Set volume to max
           video.play();
           playBtn.dataset.clicked = "true";
         }
