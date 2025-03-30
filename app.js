@@ -11,6 +11,7 @@ function handleVideoClick() {
 
       // Mobile-specific handling
       if (isMobile) {
+        console.log("Mobile clicked");
         video.muted = false;
         video.volume = 1;
         video.play();
