@@ -15,7 +15,7 @@ function handleVideoClick() {
         video.muted = false;
         video.volume = 1;
         video.play();
-        return; // Exit early for mobile
+        // return; // Exit early for mobile
       }
 
       const hasPlayed = !video.paused && !video.muted && video.volume > 0;
