@@ -15,6 +15,7 @@ function handleVideoClick() {
       const volumeControl = this.querySelector(".volume-control");
       const playBtn = this.querySelector('[f-data-video="play-button"]');
       const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
+      const fullscreenBtn = this.querySelector('[f-data-video="fullscreen"]');
 
       // hide video poster overlay
       if (playOverlay) {
@@ -77,8 +78,8 @@ function handleVideoClick() {
       }
 
       // if the clicked element is fullscreen btn logic
-      const fullscreenBtn = this.querySelector('[f-data-video="fullscreen"]');
       if (fullscreenBtn && fullscreenBtn.contains(event.target)) {
+        iOSFullscreen(video);
         if (
           !hasPlayed ||
           !playBtn.dataset.clicked ||
@@ -333,6 +334,20 @@ function handleFullscreenChange() {
       });
     }
   });
+}
+
+function iOSFullscreen(video) {
+  let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (isIOS && video) {
+    if (video.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen();
+    } else {
+      console.warn("Fullscreen not supported on this video.");
+    }
+  } else {
+    console.error("Video element not found.");
+  }
 }
 
 function fixVideoPreviewPosition() {
