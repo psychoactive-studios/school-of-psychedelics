@@ -1,5 +1,6 @@
 function handleVideoClick() {
   const videoWrappers = document.querySelectorAll(".video-wrapper");
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   // Exit if no video wrappers found
   if (!videoWrappers.length) return;
@@ -7,6 +8,15 @@ function handleVideoClick() {
   videoWrappers.forEach((wrapper) => {
     wrapper.addEventListener("click", function (event) {
       const video = this.querySelector("video");
+
+      // Mobile-specific handling
+      if (isMobile) {
+        video.muted = false;
+        video.volume = 1;
+        video.play();
+        return; // Exit early for mobile
+      }
+
       const hasPlayed = !video.paused && !video.muted && video.volume > 0;
       const playOverlay = this.querySelector(".video-play-overlay");
       const pauseBtn = this.querySelector('[f-data-video="pause-button"]');
@@ -68,8 +78,6 @@ function handleVideoClick() {
           showHideVideoInfo(true);
           video.loop = false;
           video.currentTime = 0;
-          video.muted = false; // Explicitly unmute
-          video.volume = 1; // Set volume to max
           video.play();
           playBtn.dataset.clicked = "true";
         }
