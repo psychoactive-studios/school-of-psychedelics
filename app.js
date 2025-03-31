@@ -5,7 +5,7 @@ function handleVideoClick() {
 
   // Exit if no video wrappers found
   if (!videoWrappers.length) {
-    console.log("No video wrappers found");
+    console.log("No video wrappers found ");
     return;
   }
 
