@@ -20,7 +20,7 @@ function handleVideoClick() {
         currentTime: video.currentTime,
       });
 
-      // Mobile-specific handling
+      // Mobile-specific handling here
       // if (isMobile) {
       //   console.log("Mobile-specific handling");
       //   video.muted = false;
