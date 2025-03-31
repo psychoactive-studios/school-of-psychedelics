@@ -30,6 +30,7 @@ function handleVideoClick() {
       //     paused: video.paused,
       //     muted: video.muted,
       //     volume: video.volume,
+      //  why doesnt this work?
       //   });
       // }
 
