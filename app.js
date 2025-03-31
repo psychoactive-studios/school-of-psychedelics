@@ -485,6 +485,17 @@ function setAllPreviewVideoSources() {
   });
 }
 
+function addAutoPlayToDesktopTestimonials() {
+  console.log("Adding auto play to desktop testimonials");
+  const testimonials = document.querySelectorAll("video.is-testimonial");
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (!isMobile) {
+    testimonials.forEach((testimonial) => {
+      testimonial.autoplay = true;
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM Content Loaded");
   // Only run if we have video elements on the page
@@ -493,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("No videos found on page");
     return;
   }
-
+  addAutoPlayToDesktopTestimonials();
   setAllPreviewVideoSources();
   resetVideoPreviewPosition();
   handleFullscreenChange();
