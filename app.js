@@ -21,17 +21,17 @@ function handleVideoClick() {
       });
 
       // Mobile-specific handling
-      if (isMobile) {
-        console.log("Mobile-specific handling");
-        video.muted = false;
-        video.volume = 1;
-        video.play();
-        console.log("After mobile play:", {
-          paused: video.paused,
-          muted: video.muted,
-          volume: video.volume,
-        });
-      }
+      // if (isMobile) {
+      //   console.log("Mobile-specific handling");
+      //   video.muted = false;
+      //   video.volume = 1;
+      //   video.play();
+      //   console.log("After mobile play:", {
+      //     paused: video.paused,
+      //     muted: video.muted,
+      //     volume: video.volume,
+      //   });
+      // }
 
       const hasPlayed = !video.paused && !video.muted && video.volume > 0;
       console.log("hasPlayed:", hasPlayed);
