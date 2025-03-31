@@ -20,20 +20,6 @@ function handleVideoClick() {
         currentTime: video.currentTime,
       });
 
-      // Mobile-specific handling herefs
-      // if (isMobile) {
-      //   console.log("Mobile-specific handling");
-      //   video.muted = false;
-      //   video.volume = 1;
-      //   video.play();
-      //   console.log("After mobile play:", {
-      //     paused: video.paused,
-      //     muted: video.muted,
-      //     volume: video.volume,
-      //  why doesnt this work?
-      //   });
-      // }
-
       const hasPlayed = !video.paused && !video.muted && video.volume > 0;
       console.log("hasPlayed:", hasPlayed);
 
@@ -117,14 +103,33 @@ function handleVideoClick() {
           showHideVideoInfo(true);
           video.loop = false;
           video.currentTime = 0;
-          video.muted = false;
+          // Try setting volume first, then muted state
           video.volume = 1;
+          video.muted = false;
           video.play();
           playBtn.dataset.clicked = "true";
         }
         if (!volumeBtn.dataset.clicked) {
           console.log("First time volume button clicked");
           volumeBtn.dataset.clicked = "true";
+        }
+        if (isMobile) {
+          try {
+            if (video.muted) {
+              console.log("Video muted mobile, attempting to unmute");
+              // Set volume first, then unmute
+              video.volume = 1;
+              video.muted = false;
+              // Force a play() call which might help on Android
+              video.play().catch((e) => console.log("Play failed:", e));
+            } else {
+              console.log("Video not muted mobile, muting");
+              video.muted = true;
+              video.volume = 0;
+            }
+          } catch (e) {
+            console.error("Error changing video audio state:", e);
+          }
         }
         return; // exit
       }
@@ -485,26 +490,37 @@ function setAllPreviewVideoSources() {
   });
 }
 
-function addAutoPlayToDesktopTestimonials() {
-  console.log("Adding auto play to desktop testimonials");
+function removeAutoplayOnMobileFromTestimonials() {
+  console.log("Removing autoplay on mobile from testimonials");
   const testimonials = document.querySelectorAll("video.is-testimonial");
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (!isMobile) {
-    testimonials.forEach((testimonial) => {
-      testimonial.autoplay = true;
-    });
+  testimonials.forEach((testimonial) => {
+    testimonial.autoplay = false;
+  });
+}
+
+function forceVolumeControlHeight() {
+  console.log("Forcing volume control height");
+  const volumeControl = document.querySelector(".volume-control");
+  if (volumeControl) {
+    volumeControl.style.height = "4.25rem!important";
+    console.log(volumeControl.style.height);
   }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM Content Loaded");
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   // Only run if we have video elements on the page
   const hasVideos = document.querySelectorAll("video").length > 0;
   if (!hasVideos) {
     console.log("No videos found on page");
     return;
   }
-  addAutoPlayToDesktopTestimonials();
+  if (isMobile) {
+    removeAutoplayOnMobileFromTestimonials();
+    forceVolumeControlHeight();
+  }
   setAllPreviewVideoSources();
   resetVideoPreviewPosition();
   handleFullscreenChange();
