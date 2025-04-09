@@ -1,27 +1,17 @@
 function handleVideoClick() {
   const videoWrappers = document.querySelectorAll(".video-wrapper");
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  console.log("Device type:", isMobile ? "Mobile" : "Desktop");
 
   // Exit if no video wrappers found
   if (!videoWrappers.length) {
-    console.log("No video wrappers found ");
     return;
   }
 
   videoWrappers.forEach((wrapper) => {
     wrapper.addEventListener("click", function (event) {
-      console.log("Wrapper clicked");
       const video = this.querySelector("video");
-      console.log("Video state:", {
-        paused: video.paused,
-        muted: video.muted,
-        volume: video.volume,
-        currentTime: video.currentTime,
-      });
 
       const hasPlayed = !video.paused && !video.muted && video.volume > 0;
-      console.log("hasPlayed:", hasPlayed);
 
       const playOverlay = this.querySelector(".video-play-overlay");
       const pauseBtn = this.querySelector('[f-data-video="pause-button"]');
@@ -32,37 +22,25 @@ function handleVideoClick() {
       const volumeBtn = this.querySelector('[f-data-video="volume-button"]');
       const fullscreenBtn = this.querySelector('[f-data-video="fullscreen"]');
 
-      console.log("Button states:", {
-        playBtn: playBtn ? "found" : "not found",
-        volumeBtn: volumeBtn ? "found" : "not found",
-        pauseBtn: pauseBtn ? "found" : "not found",
-        fullscreenBtn: fullscreenBtn ? "found" : "not found",
-      });
-
       // hide video poster overlay
       if (playOverlay) {
-        console.log("Hiding play overlay");
         playOverlay.style.display = "none";
       }
 
       // Show play overlay again on mouseleave if video has been interacted with
       wrapper.addEventListener("mouseleave", () => {
-        console.log("Mouse leave event");
         if (playOverlay && video.paused) {
-          console.log("Showing play overlay on mouseleave");
           playOverlay.style.display = "flex";
         }
       });
 
       // ignore pause btn clicks
       if (pauseBtn && pauseBtn.contains(event.target)) {
-        console.log("Ignoring pause button click");
         return; // exit
       }
 
       // ignore volume change clicks
       if (volumeSlider && volumeSlider.contains(event.target)) {
-        console.log("Ignoring volume slider click");
         return; // exit
       }
 
@@ -72,21 +50,17 @@ function handleVideoClick() {
         volumeControl.contains(event.target) &&
         !volumeBtn.contains(event.target)
       ) {
-        console.log("Ignoring volume control click");
         return; // exit
       }
 
       // ignore videoTimeline clicks
       if (videoTimeline && videoTimeline.contains(event.target)) {
-        console.log("Ignoring video timeline click");
         return; // exit
       }
 
       if (playBtn && playBtn.contains(event.target)) {
-        console.log("Play button clicked");
         keepHoverInteractionOnAllVideos();
         if (video.muted) {
-          console.log("Video muted, attempting to unmute");
           volumeBtn.click();
         }
         pauseOtherVideos(video);
@@ -96,9 +70,7 @@ function handleVideoClick() {
 
       // if the clicked element is volume btn logic
       if (volumeBtn && volumeBtn.contains(event.target)) {
-        console.log("Volume button clicked");
         if (!playBtn.dataset.clicked) {
-          console.log("First time play button clicked");
           resetCurrentPlayBtn(true);
           showHideVideoInfo(true);
           video.loop = false;
@@ -110,25 +82,22 @@ function handleVideoClick() {
           playBtn.dataset.clicked = "true";
         }
         if (!volumeBtn.dataset.clicked) {
-          console.log("First time volume button clicked");
           volumeBtn.dataset.clicked = "true";
         }
         if (isMobile) {
           try {
             if (video.muted) {
-              console.log("Video muted mobile, attempting to unmute");
               // Set volume first, then unmute
               video.volume = 1;
               video.muted = false;
               // Force a play() call which might help on Android
-              video.play().catch((e) => console.log("Play failed:", e));
+              video.play().catch(() => {});
             } else {
-              console.log("Video not muted mobile, muting");
               video.muted = true;
               video.volume = 0;
             }
           } catch (e) {
-            console.error("Error changing video audio state:", e);
+            // Error handling for video audio state changes
           }
         }
         return; // exit
@@ -136,14 +105,12 @@ function handleVideoClick() {
 
       // if the clicked element is fullscreen btn logic
       if (fullscreenBtn && fullscreenBtn.contains(event.target)) {
-        console.log("Fullscreen button clicked");
         iOSFullscreen(video);
         if (
           !hasPlayed ||
           !playBtn.dataset.clicked ||
           !volumeBtn.dataset.clicked
         ) {
-          console.log("Attempting to unmute for fullscreen");
           video.muted = false;
           video.volume = 1;
         }
@@ -152,18 +119,14 @@ function handleVideoClick() {
 
       // handle fullscreen play/pause
       video.addEventListener("play", () => {
-        console.log("Video play event");
         if (document.fullscreenElement === video) {
-          console.log("Video in fullscreen, resetting play button");
           resetCurrentPlayBtn(true);
           showHideVideoInfo(true);
           return;
         }
       });
       video.addEventListener("pause", () => {
-        console.log("Video pause event");
         if (document.fullscreenElement === video) {
-          console.log("Video in fullscreen, resetting pause button");
           resetCurrentPlayBtn(false);
           showHideVideoInfo(false);
           return;
@@ -172,13 +135,10 @@ function handleVideoClick() {
 
       // Skip play/pause logic if video itself is clicked in fullscreen
       if (document.fullscreenElement === video) {
-        console.log("Video in fullscreen");
         if (video.paused) {
-          console.log("Playing fullscreen video");
           resetCurrentPlayBtn(true);
           showHideVideoInfo(true);
         } else {
-          console.log("Pausing fullscreen video");
           resetCurrentPlayBtn(false);
           showHideVideoInfo(false);
         }
@@ -187,9 +147,7 @@ function handleVideoClick() {
 
       // play / pause functionality if volume btn has been clicked
       if (volumeBtn.dataset.clicked) {
-        console.log("Volume button previously clicked");
         if (video.paused) {
-          console.log("Playing video with volume");
           pauseOtherVideos(video);
           video.muted = false;
           video.volume = 1;
@@ -198,7 +156,6 @@ function handleVideoClick() {
           resetCurrentPlayBtn(true);
           showHideVideoInfo(true);
         } else {
-          console.log("Pausing video");
           video.pause();
           resetCurrentPlayBtn(false);
           showHideVideoInfo(false);
@@ -208,12 +165,10 @@ function handleVideoClick() {
 
       // custom play or pause video logic for clicking on video itself
       if (hasPlayed) {
-        console.log("Video has been played before, pausing");
         video.pause();
         resetCurrentPlayBtn(false);
         showHideVideoInfo(false);
       } else if (video.paused) {
-        console.log("Playing paused video");
         pauseOtherVideos(video);
         video.muted = false;
         video.volume = 1;
@@ -222,9 +177,7 @@ function handleVideoClick() {
         resetCurrentPlayBtn(true);
         showHideVideoInfo(true);
       } else {
-        console.log("First time playing video");
         if (!playBtn.dataset.clicked) {
-          console.log("Resetting video time");
           video.currentTime = 0;
           playBtn.dataset.clicked = "true";
         }
@@ -322,13 +275,11 @@ function handleVideoClick() {
 }
 
 function resetAllPlayBtns(inverse = false) {
-  console.log("Resetting all play buttons:", inverse);
   const playBtns = document.querySelectorAll('[f-data-video="play-button"]');
   const pauseBtns = document.querySelectorAll('[f-data-video="pause-button"]');
 
   // Exit if no buttons found
   if (!playBtns.length && !pauseBtns.length) {
-    console.log("No play/pause buttons found");
     return;
   }
 
@@ -342,12 +293,10 @@ function resetAllPlayBtns(inverse = false) {
 
 // Utility function to pause all other playing videos
 function pauseOtherVideos(currentVideo) {
-  console.log("Pausing other videos");
   const allVideos = document.querySelectorAll("video");
 
   // Exit if no videos found
   if (!allVideos.length) {
-    console.log("No videos found");
     return;
   }
 
@@ -358,7 +307,6 @@ function pauseOtherVideos(currentVideo) {
       !otherVideo.muted &&
       otherVideo.volume > 0
     ) {
-      console.log("Pausing another video");
       otherVideo.pause();
       // Reset the play/pause buttons for the paused video's wrapper
       const otherWrapper = otherVideo.closest(".video-wrapper");
@@ -392,18 +340,14 @@ function pauseOtherVideos(currentVideo) {
 }
 
 function handleFullscreenChange() {
-  console.log("Setting up fullscreen change handlers");
   // Add fullscreen change event listeners
   document.addEventListener("fullscreenchange", function () {
-    console.log("Fullscreen change event");
     const videoPlayers = document.querySelectorAll(".video-player-style");
     if (document.fullscreenElement) {
-      console.log("Entering fullscreen");
       videoPlayers.forEach((player) => {
         player.style.objectFit = "contain";
       });
     } else {
-      console.log("Exiting fullscreen");
       videoPlayers.forEach((player) => {
         player.style.objectFit = "cover";
       });
@@ -412,15 +356,12 @@ function handleFullscreenChange() {
 
   // Also handle webkit browsers
   document.addEventListener("webkitfullscreenchange", function () {
-    console.log("Webkit fullscreen change event");
     const videoPlayers = document.querySelectorAll(".video-player-style");
     if (document.webkitFullscreenElement) {
-      console.log("Entering webkit fullscreen");
       videoPlayers.forEach((player) => {
         player.style.objectFit = "contain";
       });
     } else {
-      console.log("Exiting webkit fullscreen");
       videoPlayers.forEach((player) => {
         player.style.objectFit = "cover";
       });
@@ -429,23 +370,16 @@ function handleFullscreenChange() {
 }
 
 function iOSFullscreen(video) {
-  console.log("Attempting iOS fullscreen");
   let isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   if (isIOS && video) {
     if (video.webkitEnterFullscreen) {
-      console.log("Entering iOS fullscreen");
       video.webkitEnterFullscreen();
-    } else {
-      console.warn("Fullscreen not supported on this video.");
     }
-  } else {
-    console.error("Video element not found or not iOS device.");
   }
 }
 
 function fixVideoPreviewPosition() {
-  console.log("Setting up video preview position fix");
   const element = document.querySelector(".video-preview-thumbnail_wrapper");
   const fixedY = -140;
 
@@ -459,7 +393,6 @@ function fixVideoPreviewPosition() {
 }
 
 function resetVideoPreviewPosition() {
-  console.log("Resetting video preview position");
   const element = document.querySelector(".video-preview-thumbnail_wrapper");
 
   const observer = new MutationObserver(() => {
@@ -470,10 +403,8 @@ function resetVideoPreviewPosition() {
 }
 
 function setAllPreviewVideoSources() {
-  console.log("Setting preview video sources");
   const videoWrappers = document.querySelectorAll(".video-wrapper");
   if (!videoWrappers.length) {
-    console.log("No video wrappers found for preview sources");
     return;
   }
 
@@ -481,7 +412,6 @@ function setAllPreviewVideoSources() {
     const video = wrapper.querySelector('[f-data-video="video-element"]');
     const preview = wrapper.querySelector('[f-data-video="video-preview"]');
     if (!video || !preview) {
-      console.log("Missing video or preview element");
       return;
     }
 
@@ -491,7 +421,6 @@ function setAllPreviewVideoSources() {
 }
 
 function removeAutoplayOnMobileFromTestimonials() {
-  console.log("Removing autoplay on mobile from testimonials");
   const testimonials = document.querySelectorAll("video.is-testimonial");
   testimonials.forEach((testimonial) => {
     testimonial.autoplay = false;
@@ -499,22 +428,18 @@ function removeAutoplayOnMobileFromTestimonials() {
 }
 
 function forceVolumeControlHeight() {
-  console.log("Forcing volume control height");
   const volumeControl = document.querySelector(".volume-control");
   if (volumeControl) {
     volumeControl.style.height = "4.25rem!important";
-    console.log(volumeControl.style.height);
   }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("DOM Content Loaded");
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   // Only run if we have video elements on the page
   const hasVideos = document.querySelectorAll("video").length > 0;
   if (!hasVideos) {
-    console.log("No videos found on page");
     return;
   }
   if (isMobile) {
